@@ -2,15 +2,16 @@
 
 import binascii
 import mmap
-
+import os
 
 class CSplitB(object):
     def __init__(self, spliton, infile, number, prefix, suffix):
         spliton_str = binascii.unhexlify(spliton)
-        if not prefix:
-            prefix = "xx"
-        if not suffix:
-            suffix = ".dat"
+        tmp = os.path.splitext(infile)
+        if prefix is None:
+            prefix = tmp[0] + "_"
+        if suffix is None:
+            suffix = tmp[1]
         self.spliton_str = spliton_str
         self.infile = infile
         self.number = number

@@ -11,8 +11,8 @@ def main(argv = sys.argv):
     parser.add_argument("spliton", help="Hexadecimal representation of data to split on.")
     parser.add_argument("infile", help="Input file.")
     parser.add_argument("-n", "--number", type=int, help="Number of zeroes to pad filename. Default is 2", default=2)
-    parser.add_argument("-f", "--prefix", help="Output file prefix. Default is xx", default="xx")
-    parser.add_argument("-s", "--suffix", help="Output file suffix. Defaults is .dat", default=".dat")
+    parser.add_argument("-f", "--prefix", help="Output file prefix. Default is [infile_]", default=None)
+    parser.add_argument("-s", "--suffix", help="Output file suffix. Default is the extenstion of [infile]", default=None)
     args = parser.parse_args(argv[1:])
 
     csplitb = CSplitB(args.spliton, args.infile, args.number, args.prefix, args.suffix)
