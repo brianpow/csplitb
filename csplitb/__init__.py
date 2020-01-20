@@ -17,32 +17,35 @@ class CSplitB(object):
         self.number = number
         self.prefix = prefix
         self.suffix = suffix
-        self.number_fmt = "%%0%dd" % self.number
-        self.last_idx = -1
         self.count = 0
-
+        self.last_idx = -1
+        self.indexes = []
     def run(self):
         with open(self.infile, "r+b") as f:
             self.mm = mmap.mmap(f.fileno(), 0)
             while True:
                 idx = self.mm.find(self.spliton_str, self.last_idx + 1)
                 if idx == -1:
-                    self.finish()
+                    self.write()
                     break
                 else:
-                    self.rotate(idx)
+                    self.indexes.append(idx)
+                    self.last_idx = idx
 
-    def rotate(self, idx):
-        if self.last_idx != -1:
-            self.write(self.mm[self.last_idx:idx])
-        self.last_idx = idx
+    def write(self):
+        number = self.number
+        if self.number is None:
+            number=len(str(len(self.indexes)))
+        number_fmt = "%%0%dd" % number
 
+        count = len(self.indexes)
+        if len(self.indexes):
+            for i in range(count - 1):
+                outfile = self.prefix + (number_fmt % (i+1) ) + self.suffix
+                self.do_write(self.mm[self.indexes[i]:self.indexes[i+1]], outfile)
+            outfile = self.prefix + (number_fmt % count ) + self.suffix
+            self.do_write(self.mm[self.indexes[count-1]:], outfile)
 
-    def finish(self):
-        self.write(self.mm[self.last_idx:])
-
-    def write(self, data):
-        outfile = self.prefix + (self.number_fmt % self.count) + self.suffix
+    def do_write(self, data, outfile):
         with open(outfile, "w+b") as f:
             f.write(data)
-        self.count += 1
