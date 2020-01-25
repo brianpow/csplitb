@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import argparse
 import sys
-
 from csplitb import CSplitB
 
 
@@ -10,14 +10,17 @@ def main(argv = sys.argv):
     parser = argparse.ArgumentParser(description="csplitb - Context splitter on binary data.")
     parser.add_argument("spliton", help="Hexadecimal representation of data to split on.")
     parser.add_argument("infiles", nargs="+", help="Input files.")
+    parser.add_argument("-e", "--splitend", help="Hexadecimal representation of ending marker", default=None)
     parser.add_argument("-n", "--number", type=int, help="Number of zeroes to pad filename. Default is auto padding", default=None)
     parser.add_argument("-f", "--prefix", help="Output file prefix. Default is [infile_]", default=None)
     parser.add_argument("-s", "--suffix", help="Output file suffix. Default is the extenstion of [infile]", default=None)
     args = parser.parse_args(argv[1:])
 
     for infile in args.infiles:
-        csplitb = CSplitB(args.spliton, infile, args.number, args.prefix, args.suffix)
-        csplitb.run()
+        print("Reading %s..." % infile, end = '')
+        csplitb = CSplitB(args.spliton, infile, args.splitend, args.number, args.prefix, args.suffix)
+        count = csplitb.run()
+        print("%d file splitted." % count)
 
 
 if __name__ == '__main__':
