@@ -51,7 +51,7 @@ class CSplitB(object):
                 if self.splitend_str:
                     if self.indexes[i] < end_index:
                         continue
-                    end_index=self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str) )+1
+                    end_index=self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str) ) + len(self.splitend_str)
                 else:
                     end_index=self.indexes[i+1]
                 if end_index > 0:
@@ -62,7 +62,7 @@ class CSplitB(object):
             if self.splitend_str:
                 if self.indexes[count-1] < end_index:
                     return file_written_count
-                end_index=self.mm.find(self.splitend_str, self.indexes[count-1] + len(self.spliton_str) )+1
+                end_index=self.mm.find(self.splitend_str, self.indexes[count-1] + len(self.spliton_str) ) + len(self.splitend_str)
             else:
                 end_index=len(self.mm)
             if end_index > 0:
