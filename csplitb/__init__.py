@@ -5,7 +5,7 @@ import mmap
 import os
 
 class CSplitB(object):
-    def __init__(self, spliton, infile, splitend, number, prefix, suffix):
+    def __init__(self, spliton, infile, splitend, start_offset, end_offset, number, prefix, suffix):
         spliton_str = binascii.unhexlify(spliton)
         splitend_str = ""
         if splitend is not None:
@@ -21,6 +21,8 @@ class CSplitB(object):
         self.number = number
         self.prefix = prefix
         self.suffix = suffix
+        self.start_offset = start_offset
+        self.end_offset = end_offset
         self.count = 0
         self.last_idx = -1
         self.indexes = []
@@ -42,33 +44,41 @@ class CSplitB(object):
             number=len(str(len(self.indexes)))
         number_fmt = "%%0%dd" % number
 
+        file_written_count = 0
         count = len(self.indexes)
         if len(self.indexes):
             end_index = -1
-            file_written_count = 0
             for i in range(count - 1):
                 outfile = self.prefix + (number_fmt % (file_written_count+1) ) + self.suffix
+                if self.indexes[i] + self.start_offset < 0 or self.indexes[i] + self.start_offset > len(self.mm):
+                    continue
                 if self.splitend_str:
-                    if self.indexes[i] < end_index:
+                    if self.indexes[i] + self.start_offset < end_index:
                         continue
-                    end_index=self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str) ) + len(self.splitend_str)
+                    end_index=self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str) ) + len(self.splitend_str) + self.end_offset
                 else:
-                    end_index=self.indexes[i+1]
-                if end_index > 0:
-                    print(self.indexes[i], end_index)
-                    self.do_write(self.mm[self.indexes[i]:end_index], outfile)
-                    file_written_count += 1
-            outfile = self.prefix + (number_fmt % (file_written_count + 1) ) + self.suffix
-            if self.splitend_str:
-                if self.indexes[count-1] < end_index:
-                    return file_written_count
-                end_index=self.mm.find(self.splitend_str, self.indexes[count-1] + len(self.spliton_str) ) + len(self.splitend_str)
-            else:
-                end_index=len(self.mm)
-            if end_index > 0:
-                self.do_write(self.mm[self.indexes[count-1]:end_index], outfile)
+                    end_index=self.indexes[i+1] + self.end_offset
+
+                if end_index < 0 or end_index > len(self.mm):
+                    continue
+                self.do_write(self.mm[self.indexes[i] + self.start_offset:end_index], outfile)
                 file_written_count += 1
-            return file_written_count
+            outfile = self.prefix + (number_fmt % (file_written_count + 1) ) + self.suffix
+            i = count - 1
+            if self.indexes[i] + self.start_offset < 0 or self.indexes[i] + self.start_offset > len(self.mm):
+                return file_written_count
+            if self.splitend_str:
+                if self.indexes[i] + self.start_offset < end_index:
+                    return file_written_count
+                end_index=self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str) ) + len(self.splitend_str) + self.end_offset
+            else:
+                end_index=len(self.mm) # Intentionally ignore self.end_offset for last match
+
+            if end_index < 0 or end_index > len(self.mm):
+                return file_written_count
+            self.do_write(self.mm[self.indexes[i] + self.start_offset:end_index], outfile)
+            file_written_count += 1
+        return file_written_count
 
     def do_write(self, data, outfile):
         with open(outfile, "w+b") as f:
