@@ -61,7 +61,10 @@ class CSplitB(object):
                 if self.splitend_str:
                     if self.indexes[i] + self.start_offset < end_index:
                         continue
-                    end_index=self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str) ) + len(self.splitend_str) + self.end_offset
+                    end_index = self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str))
+                    if end_index < 0:
+                        continue
+                    end_index += len(self.splitend_str) + self.end_offset
                 else:
                     end_index=self.indexes[i+1] + self.end_offset
 
@@ -76,7 +79,10 @@ class CSplitB(object):
             if self.splitend_str:
                 if self.indexes[i] + self.start_offset < end_index:
                     return file_written_count
-                end_index=self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str) ) + len(self.splitend_str) + self.end_offset
+                end_index = self.mm.find(self.splitend_str,self.indexes[i] + len(self.spliton_str))
+                if end_index < 0:
+                    return file_written_count
+                end_index += len(self.splitend_str) + self.end_offset
             else:
                 end_index=len(self.mm) # Intentionally ignore self.end_offset for last match
 
