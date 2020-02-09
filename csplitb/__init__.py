@@ -6,10 +6,16 @@ import os
 
 class CSplitB(object):
     def __init__(self, spliton, infile, splitend, start_offset, end_offset, number, prefix, suffix):
-        spliton_str = binascii.unhexlify(spliton)
+        if spliton[0:1] == "/" and spliton[-1] == "/":
+            spliton_str=spliton[1:-1]
+        else:
+            spliton_str = binascii.unhexlify(spliton)
         splitend_str = ""
         if splitend is not None:
-            splitend_str = binascii.unhexlify(splitend)
+            if splitend[0:1] == "/" and splitend[-1] == "/":
+                splitend_str=splitend[1:-1]
+            else:
+                splitend_str = binascii.unhexlify(splitend)
         tmp = os.path.splitext(infile)
         if prefix is None:
             prefix = tmp[0] + "_"
